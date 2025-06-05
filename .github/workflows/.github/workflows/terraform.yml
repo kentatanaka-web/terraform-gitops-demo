@@ -1,0 +1,43 @@
+name: Terraform GitOps Demo
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  terraform:
+    name: "Terraform: fmt, init, plan, apply"
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+      - name: Checkout code 🔃
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform 🛠️
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform fmt & validate 📐
+        run: |
+          terraform fmt -check
+          terraform init -input=false
+          terraform validate
+
+      - name: Terraform plan 📄
+        if: github.event_name == 'pull_request'
+        run: |
+          terraform plan -input=false -no-color
+
+      - name: Terraform apply 🚀
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          terraform init -input=false
+          terraform apply -input=false -auto-approve
