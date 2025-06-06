@@ -1,1 +1,2 @@
-# Terraform GitOps デモリポジトリ
+# Terraform GitOps デモ用リポジトリ
+たなかけんた
